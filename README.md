@@ -5,3 +5,5 @@
    [week1](https://raw.githubusercontent.com/stenbra/TiralabraSyksy22/main/Documentation/Week%201%20report.pdf)
    
    [week2](https://raw.githubusercontent.com/stenbra/TiralabraSyksy22/main/Documentation/Week%20report%202.pdf)
+   
+   [week3](https://raw.githubusercontent.com/stenbra/TiralabraSyksy22/main/Documentation/Week%203%20report%20.pdf)
