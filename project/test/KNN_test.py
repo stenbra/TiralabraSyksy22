@@ -1,11 +1,17 @@
 import unittest
-import KNN
+from KNN import Knn
 from testData import TestData
 
 class TestKNNFunctions(unittest.TestCase):
     def setUp(self) -> None:
         return super().setUp()
+    
     def test_get_majority_neighbour_number(self):
-        self.assertEqual(KNN.GetTheMajorityNeighbourNumber([[14,5],[15,6],[29,6],[34,5],[36,6],[40,6]]),6)
+        self.assertEqual(Knn.GetTheMajorityNeighbourNumber(TestData.DistListForADigitFour(),TestData.HundredFirstTrainLabels()),4)
+    
     def test_create_pixel_bool_coordinate_number(self):
-        self.assertAlmostEqual(KNN.CreatePixelBoolCoordinateNumber(TestData.NumberData),TestData.NumberPixelBoolData)
+        self.assertAlmostEqual(Knn.CreatePixelBoolCoordinateNumber(TestData.NumberData()),TestData.NumberPixelBoolData())
+
+    def test_closest_coordinate_distance(self):
+        coordinate = [23,12]
+        self.assertEqual(Knn.GetClosestNeighbour(coordinate,TestData.BoolCordTableTrainDataEntryindex_nine_nine()),2)

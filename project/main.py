@@ -1,5 +1,5 @@
 from matplotlib import pyplot
-import KNN
+from KNN import Knn
 import numpy as np
 from dataloader import Dataloader
 
@@ -7,31 +7,31 @@ def main():
     #loading train data
     trainData = Dataloader.GetImageData('datafiles/train-images.idx3-ubyte')
     trainLData = Dataloader.GetLabelData('datafiles/train-labels.idx1-ubyte')
-    print(trainLData)
 
     #loading test data
     testData = Dataloader.GetImageData('datafiles/t10k-images.idx3-ubyte')
     testLData = Dataloader.GetLabelData('datafiles/t10k-labels.idx1-ubyte')
-    print(testLData)
+
     #Table generation
-    trainBoolCoordtable = KNN.CreatePixelBoolCoordinateTable(trainData,100)
+    trainBoolCoordtable = Knn.CreatePixelBoolCoordinateTable(trainData,100)
     #testBoolCoordtable = CreatePixelBoolCoordinateTable(testData)
-    testNumber=KNN.CreatePixelBoolCoordinateNumber(testData[56])
-
+    testNumber=Knn.CreatePixelBoolCoordinateNumber(testData[2])
     # getting a sorted list of all data points based on the distance between the colored pixels of the images
-    distList= KNN.ComparenNumberWithBoolCodrdinates(testNumber,trainBoolCoordtable)
+    distList= Knn.ComparenNumberWithBoolCodrdinates(testNumber,trainBoolCoordtable)
     
     
 
-    recognizedNumber= KNN.GetTheMajorityNeighbourNumber(distList,trainLData,5)
+    recognizedNumber= Knn.GetTheMajorityNeighbourNumber(distList,trainLData,5)
 
     #the number we think it is
-    print(recognizedNumber)
+    print("The number that the algorith recognized "+ str(recognizedNumber))
     #the numer it is
-    print(testLData[56])
-    pyplot.imshow(testData[56])
+    print("The digit tested was a "+str(testLData[2]))
+    pyplot.imshow(testData[2])
     pyplot.show()
-    print(KNN.GetErrorPercentage(testData,trainData,testLData,trainLData,100))
+    ##commented out since it takes a while to check accuracy
+    #accuracy check
+    print(Knn.GetErrorPercentage(testData,trainData,testLData,trainLData,10,1000))
 
 if __name__ == "__main__":
     main()
