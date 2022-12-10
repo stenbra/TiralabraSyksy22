@@ -1,4 +1,4 @@
-
+import math
 class Knn:
     ## Find the closest colered pixel coordinate to the given coordinate
     @staticmethod
@@ -35,6 +35,15 @@ class Knn:
                 max=27
             coordRange.append([min,max])
         return coordRange
+    
+    @staticmethod
+    def PreCalulateDistanceToSurroundingNeighbours(searchRadius):
+        distLocDict = {}
+        for i in range(-searchRadius,searchRadius+1):
+            for j in range(-searchRadius,searchRadius+1):
+                distLocDict[str(i)+","+str(j)]= math.sqrt(i**2+j**2)
+        return distLocDict
+
 
     ## returns distance to nearest coolored coordinate 0 if they overlap
     @staticmethod
@@ -70,9 +79,16 @@ class Knn:
         distList=[]
         for i in range(len(trainData)):
             dist=0
+            dist2=0
             for j in range(len(number)):
                 dist += Knn.DistanceToNearesNeighbour(number[j],trainData[i])
-            distList.append([dist,i])
+            for j in range(len(trainData[i])):
+                dist2 += Knn.DistanceToNearesNeighbour(trainData[i],number)
+            if dist<dist2:
+                distList.append([dist,i])
+            else:
+                distList.append([dist2,i])
+        #TODO Use heap
         distList = sorted(distList, key=lambda x: x[0])
         return distList
 
