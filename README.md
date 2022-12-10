@@ -13,3 +13,5 @@
    [week4](https://raw.githubusercontent.com/stenbra/TiralabraSyksy22/main/Documentation/Week%204%20report.pdf)
    
    [week5](https://raw.githubusercontent.com/stenbra/TiralabraSyksy22/main/Documentation/Week%205%20report.pdf)
+
+   [week6](https://raw.githubusercontent.com/stenbra/TiralabraSyksy22/main/Documentation/Week%206%20report.pdf)
