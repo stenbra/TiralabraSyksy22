@@ -1,25 +1,20 @@
 import math
+from minheap import MinHeap
 class Knn:
     ## Find the closest colered pixel coordinate to the given coordinate
     @staticmethod
-    def GetClosestNeighbour(coordinate,numTable,wholeTable=False):
-        #the whole search range thing does not seem efficient at the moment
-        if wholeTable:
-            nearbyCoords = Knn.GetNeighbouringCoordinateRange(coordinate,30)
-        else:
-            nearbyCoords = Knn.GetNeighbouringCoordinateRange(coordinate)
-        nearestCord=[]
+    def GetClosestNeighbour(coordinate,numTable,precalcDist,searchRadius=2):
         dist = 40
-        #TODO: optimize with a tabel using premade distances so the calculations are reduced
+        nearbyCoords = Knn.GetNeighbouringCoordinateRange(coordinate,searchRadius)
+
         for i in range(nearbyCoords[0][0],nearbyCoords[0][1]):
             for j in range(nearbyCoords[1][0],nearbyCoords[1][1]):
                 if[i,j] in numTable:
-                    if not nearestCord:
-                        nearestCord= [i,j]
-                    elif ((nearestCord[0]-coordinate[0])**2 +(nearestCord[1]-coordinate[1])**2)>((i-coordinate[0])**2 +(j-coordinate[1])**2):
-                        nearestCord =[i,j]
-        if nearestCord:
-            dist = (nearestCord[0]-coordinate[0])**2+(nearestCord[1]-coordinate[1])**2
+                    cdist =precalcDist[coordinate[0]-i+searchRadius][coordinate[1]-j+searchRadius]
+                    if cdist==1:
+                        return 1
+                    elif cdist<dist:
+                        dist= cdist    
         return dist
     
     ## Definces which coordinates to search for around cordinate
@@ -31,29 +26,31 @@ class Knn:
             max = coordinate[i]+searchRadius
             if(min<0):
                 min=0
-            if(max>27):
-                max=27
+            if(max>28):
+                max=28
             coordRange.append([min,max])
         return coordRange
     
     @staticmethod
     def PreCalulateDistanceToSurroundingNeighbours(searchRadius):
-        distLocDict = {}
-        for i in range(-searchRadius,searchRadius+1):
-            for j in range(-searchRadius,searchRadius+1):
-                distLocDict[str(i)+","+str(j)]= math.sqrt(i**2+j**2)
-        return distLocDict
+        distList = []
+        for i in range(2*searchRadius+1):
+            distListj=[]
+            for j in range(2*searchRadius+1):
+                distListj.append(math.sqrt((i-searchRadius)**2+(j-searchRadius)**2))
+            distList.append(distListj)    
+        return distList
 
 
     ## returns distance to nearest coolored coordinate 0 if they overlap
     @staticmethod
-    def DistanceToNearesNeighbour(coordinate,numTable):
+    def DistanceToNearesNeighbour(coordinate,numTable,precalcSR,precalcMax,searchRadius):
         if coordinate in numTable:
             return 0
-        nearCord=Knn.GetClosestNeighbour(coordinate,numTable)
-        if nearCord != 100:
+        nearCord=Knn.GetClosestNeighbour(coordinate,numTable,precalcSR,searchRadius)
+        if nearCord != 40:
             return nearCord
-        return Knn.GetClosestNeighbour(coordinate,numTable,True)
+        return Knn.GetClosestNeighbour(coordinate,numTable,precalcMax,27)
 
     @staticmethod
     def CreatePixelBoolCoordinateTable(data,entryCap=0):
@@ -75,19 +72,19 @@ class Knn:
         
     ## get a sorted list of numbers based on how close their pixels are to the given number
     @staticmethod
-    def ComparenNumberWithBoolCodrdinates(number,trainData):
+    def ComparenNumberWithBoolCodrdinates(number,trainData,searchRadius=2):
         distList=[]
+        precalcDist = Knn.PreCalulateDistanceToSurroundingNeighbours(searchRadius)
+        precalcDistAll = Knn.PreCalulateDistanceToSurroundingNeighbours(27)
         for i in range(len(trainData)):
             dist=0
             dist2=0
             for j in range(len(number)):
-                dist += Knn.DistanceToNearesNeighbour(number[j],trainData[i])
+                dist += Knn.DistanceToNearesNeighbour(number[j],trainData[i],precalcDist,precalcDistAll,searchRadius)
             for j in range(len(trainData[i])):
-                dist2 += Knn.DistanceToNearesNeighbour(trainData[i],number)
-            if dist<dist2:
-                distList.append([dist,i])
-            else:
-                distList.append([dist2,i])
+                dist2 += Knn.DistanceToNearesNeighbour(trainData[i][j],number,precalcDist,precalcDistAll,searchRadius)
+            distList.append([max(dist,dist2),i])
+
         #TODO Use heap
         distList = sorted(distList, key=lambda x: x[0])
         return distList
@@ -101,18 +98,25 @@ class Knn:
         #print(votelist)
         recognizedNumber=max(votelist,key=votelist.count)
         return recognizedNumber
+    def GetTheMajorityNeighbourNumberData(datalist, labelData,trainData,neighbourCount=5):
+        votelist =[]
+        for i in range(neighbourCount):
+            votelist.append([trainData[datalist[i][1]],labelData[datalist[i][1]]])
+        return votelist
 
     ## gets the precentage of incorrect guesses
     @staticmethod
-    def GetErrorPercentage(testData,trainData,testLabels,trainLabels,entries=10,trainEntries=1000):
+    def GetErrorPercentage(testData,trainData,testLabels,trainLabels,entries=10,trainEntries=1000,k=5):
         trainBoolTable=Knn.CreatePixelBoolCoordinateTable(trainData,trainEntries)
         testBoolTable=Knn.CreatePixelBoolCoordinateTable(testData,entries)
         correctRecognitions=0
+        wrongGuesses=[]
         for i in range(entries):
             distList= Knn.ComparenNumberWithBoolCodrdinates(testBoolTable[i],trainBoolTable)
-            recognizedNumber= Knn.GetTheMajorityNeighbourNumber(distList,trainLabels)
+            recognizedNumber= Knn.GetTheMajorityNeighbourNumber(distList,trainLabels,k)
             if testLabels[i]==recognizedNumber:
                 correctRecognitions +=1
             else:
+                wrongGuesses.append([testData[i],testLabels[i],recognizedNumber])
                 print(str(testLabels[i])+" =/= "+str(recognizedNumber)+" at index:"+str(i))
-        return 1-correctRecognitions/entries
+        return [(1-correctRecognitions/entries),wrongGuesses]
