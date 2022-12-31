@@ -1,5 +1,5 @@
 import math
-from minheap import MinHeap
+import time
 class Knn:
     ## Find the closest colered pixel coordinate to the given coordinate
     @staticmethod
@@ -95,8 +95,9 @@ class Knn:
         votelist =[]
         for i in range(neighbourCount):
             votelist.append(labelData[datalist[i][1]])
-        #print(votelist)
         recognizedNumber=max(votelist,key=votelist.count)
+        #note that it takes the first set if there are an equal number of numbers eg 1,1,1,2,2,2 would give 1
+        #and 2,2,2,1,1,1 would give 2 so it will be the closer one out of the two
         return recognizedNumber
     def GetTheMajorityNeighbourNumberData(datalist, labelData,trainData,neighbourCount=5):
         votelist =[]
@@ -112,6 +113,7 @@ class Knn:
         correctRecognitions=0
         wrongGuesses=[]
         for i in range(entries):
+            start=time.time()
             distList= Knn.ComparenNumberWithBoolCodrdinates(testBoolTable[i],trainBoolTable)
             recognizedNumber= Knn.GetTheMajorityNeighbourNumber(distList,trainLabels,k)
             if testLabels[i]==recognizedNumber:
@@ -119,4 +121,5 @@ class Knn:
             else:
                 wrongGuesses.append([testData[i],testLabels[i],recognizedNumber])
                 print(str(testLabels[i])+" =/= "+str(recognizedNumber)+" at index:"+str(i))
+            print("Time spent on enrty",i,time.time()-start)
         return [(1-correctRecognitions/entries),wrongGuesses]
